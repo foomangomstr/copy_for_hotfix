@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+# when subcommand fails, exit
+set -e
+
+# show command
+set -x
+
+VERSION="2.4.010-63"
+TAR_VERSION=`echo $VERSION | sed  's/\-/\./g'`
+FILE_NAME="usher_networkmanager-$VERSION.el6.x86_64.rpm"
+TAR_NAME="UsherNetwork_$TAR_VERSION.tar.gz"
+RPM_URL="http://install.infra.wisdom.com/usher/x86_64/$FILE_NAME"
+
+# Create stage
+rm -rf stage
+mkdir stage
+pushd stage
+
+# Download rpm
+wget $RPM_URL
+
+# Extract files from rpm
+rpm2cpio $FILE_NAME |cpio -idmv
+
+
+mkdir manager
+pushd manager
+
+tar xzf ../MSTR/usher/networkmanager/install/tar/$TAR_NAME
+mv src networkmanager
+mv ../MSTR/usher/networkmanager/install/bin tools
+mv db tools/
