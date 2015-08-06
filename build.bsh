@@ -6,7 +6,7 @@ set -e
 # show command
 set -x
 
-VERSION="2.4.010-63"
+VERSION="${1:-2.4.010-63}"
 TAR_VERSION=`echo $VERSION | sed  's/\-/\./g'`
 FILE_NAME="usher_networkmanager-$VERSION.el6.x86_64.rpm"
 TAR_NAME="UsherNetwork_$TAR_VERSION.tar.gz"
