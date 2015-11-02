@@ -7,8 +7,12 @@ set -e
 set -x
 
 VERSION="${1:-2.4.010-63}"
+TARGET="${2:-forInstall}"
+DEST="${3:-/usr4/Usher/NetworkManager}"
+UAT="${4}"
+
 TAR_VERSION=`echo $VERSION | sed  's/\-/\./g'`
-FILE_NAME="usher_networkmanager-$VERSION.el6.x86_64.rpm"
+FILE_NAME="usher_networkmanager$UAT-$VERSION.el6.x86_64.rpm"
 TAR_NAME="UsherNetwork_$TAR_VERSION.tar.gz"
 RPM_URL="http://install.infra.wisdom.com/usher/x86_64/$FILE_NAME"
 
@@ -27,7 +31,29 @@ rpm2cpio $FILE_NAME |cpio -idmv
 mkdir manager
 pushd manager
 
+
 tar xzf ../MSTR/usher/networkmanager/install/tar/$TAR_NAME
 mv src networkmanager
 mv ../MSTR/usher/networkmanager/install/bin tools
 mv db tools/
+
+# Create target dir
+popd
+mkdir $TARGET
+mv manager $TARGET/
+
+DESC_DIR="$DEST/$TARGET"
+
+# Backup
+TIMESTAMP=`date +%m%d%y_%s.%N`
+BACKUP_DIR=$DESC_DIR
+BACKUP_DIR+="_"
+BACKUP_DIR+=$TIMESTAMP
+su Mbuilder -c "mv -f $DESC_DIR $BACKUP_DIR"
+
+# Copy to destination dir
+su Mbuilder -c "cp -r $TARGET $DESC_DIR"
+
+# Print timestamp
+ls -la --full-time $DESC_DIR
+date -R
