@@ -49,7 +49,8 @@ TIMESTAMP=`date +%m%d%y_%s.%N`
 BACKUP_DIR=$DESC_DIR
 BACKUP_DIR+="_"
 BACKUP_DIR+=$TIMESTAMP
-su Mbuilder -c "mv -f $DESC_DIR $BACKUP_DIR"
+# Handle no $DESC_DIR
+eval "su Mbuilder -c \"bash -c 'if [ -e $DESC_DIR ]; then mv -f $DESC_DIR $BACKUP_DIR; fi'\""
 
 # Copy to destination dir
 su Mbuilder -c "cp -r $TARGET $DESC_DIR"
