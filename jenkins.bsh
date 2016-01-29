@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+##############################################################################################################################################################################
+# Copy NM code to forInstall/forHotfix directory
+#
+# Require jenkins to run su Mbuilder without password
+# file: /etc/pam.d/su
+# content:
+#         auth            sufficient      pam_rootok.so
+#         auth       [success=ignore default=1] pam_succeed_if.so user = Mbuilder
+#         auth       sufficient   pam_succeed_if.so use_uid user = jenkins
+
+##############################################################################################################################################################################
+
+# when subcommand fails, exit
+set -e
+
+# show command
+set -x
+
+DIR=$(dirname $0)
+DIR=$(cd $DIR; pwd -P)
+BUILD_SCRIPT="$DIR/build.bsh"
+
+RPM_REPO_URL=${RPM_REPO_URL:-"http://install.infra.wisdom.com/usher/x86_64/"}
+TARGET_DIR=${TARGET_DIR:-"/tmp"}
+#TARGET_DIR=${TARGET_DIR:-"/usr4/Usher/NetworkManager"}
+
+FOR_WHITCH=${FOR_WHITCH:-"forInstall"}
+
+if [ "UAT" = "$RPM_TYPE" ]; then
+  SUFFIX="_uat"
+fi
+
+# Get the last built rpm for NM
+RPM_VERSION=$(curl http://install.infra.wisdom.com/usher/x86_64/ | grep "usher_networkmanager$SUFFIX\-" | tail -n 1 | sed "s/.*usher_networkmanager$SUFFIX-\(.*\)\.el6\.x86_64\.rpm.*/\1/")
+
+$BUILD_SCRIPT $RPM_VERSION $FOR_WHITCH $TARGET_DIR
