@@ -11,10 +11,18 @@ TARGET="${2:-forInstall}"
 DEST="${3:-/usr4/Usher/NetworkManager}"
 UAT="${4}"
 
+DIR=$(dirname $0)
+DIR=$(cd $DIR; pwd -P)
+LOG_DIR="$DIR/log"
+LOG_FILE="$LOG_DIR/build.log.$TIMESTAMP"
+
 TAR_VERSION=`echo $VERSION | sed  's/\-/\./g'`
 FILE_NAME="usher_networkmanager$UAT-$VERSION.el6.x86_64.rpm"
 TAR_NAME="UsherNetwork_$TAR_VERSION.tar.gz"
 RPM_URL="http://install.infra.wisdom.com/usher/x86_64/$FILE_NAME"
+
+# Make log directory
+mkdir -p $LOG_DIR
 
 # Create stage
 rm -rf stage
@@ -22,17 +30,21 @@ mkdir stage
 pushd stage
 
 # Download rpm
-wget $RPM_URL
+if [ -z "$JENKINS_URL" ]; then
+  wget $RPM_URL
+else
+  wget --quiet $RPM_URL
+fi
 
 # Extract files from rpm
-rpm2cpio $FILE_NAME |cpio -idmv
+rpm2cpio $FILE_NAME |cpio -idmv >/dev/null 2>&1
 
 
 mkdir manager
 pushd manager
 
 
-tar xzf ../MSTR/usher/networkmanager/install/tar/$TAR_NAME
+tar xzf ../MSTR/usher/networkmanager/install/tar/$TAR_NAME >/dev/null 2>&1
 mv src networkmanager
 mv ../MSTR/usher/networkmanager/install/bin tools
 mv db tools/
@@ -49,11 +61,38 @@ TIMESTAMP=`date +%m%d%y_%s.%N`
 BACKUP_DIR=$DESC_DIR
 BACKUP_DIR+="_"
 BACKUP_DIR+=$TIMESTAMP
-# Handle no $DESC_DIR
-eval "su Mbuilder -c \"bash -c 'if [ -e $DESC_DIR ]; then mv -f $DESC_DIR $BACKUP_DIR; fi'\""
 
-# Copy to destination dir
-su Mbuilder -c "cp -r $TARGET $DESC_DIR"
+# use current user
+if [ ! -z "$USE_CURRENT_USER" ]; then
+
+  # backup
+  if [ -e $DESC_DIR ]; then
+    mv -f $DESC_DIR $BACKUP_DIR
+  fi
+
+  # copy to destination dir
+  cp -r $TARGET $DESC_DIR
+
+# use Mbuilder to execute cmd
+else
+
+  # backup
+  eval "su Mbuilder -c \"bash -c 'if [ -e $DESC_DIR ]; then mv -f $DESC_DIR $BACKUP_DIR; fi'\""
+
+  # copy to destination dir
+  su Mbuilder -c "cp -r $TARGET $DESC_DIR"
+fi
+
+if [ -e $BACKUP_DIR -a -e $DESC_DIR ]; then
+
+  diff -r $DESC_DIR $BACKUP_DIR > $LOG_FILE
+
+  # Diff from last build, only show 50 lines:
+  echo "Diff from last build, only show 50 lines:"
+  head -n 50 $LOG_FILE 
+  echo -e "\nend diff\n"
+fi
+
 
 # Print timestamp
 ls -la --full-time $DESC_DIR
