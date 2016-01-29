@@ -85,7 +85,7 @@ fi
 if [ -e $BACKUP_DIR -a -e $DESC_DIR ]; then
 
   LOG_FILE="$LOG_DIR/build.log.$TIMESTAMP"
-  diff -r $DESC_DIR $BACKUP_DIR > $LOG_FILE
+  diff -r $DESC_DIR $BACKUP_DIR > $LOG_FILE || true
 
   # Diff from last build, only show 50 lines:
   echo "Diff from last build, only show 50 lines:"
