@@ -14,7 +14,6 @@ UAT="${4}"
 DIR=$(dirname $0)
 DIR=$(cd $DIR; pwd -P)
 LOG_DIR="$DIR/log"
-LOG_FILE="$LOG_DIR/build.log.$TIMESTAMP"
 
 TAR_VERSION=`echo $VERSION | sed  's/\-/\./g'`
 FILE_NAME="usher_networkmanager$UAT-$VERSION.el6.x86_64.rpm"
@@ -85,6 +84,7 @@ fi
 
 if [ -e $BACKUP_DIR -a -e $DESC_DIR ]; then
 
+  LOG_FILE="$LOG_DIR/build.log.$TIMESTAMP"
   diff -r $DESC_DIR $BACKUP_DIR > $LOG_FILE
 
   # Diff from last build, only show 50 lines:
