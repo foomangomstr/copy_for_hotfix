@@ -36,7 +36,7 @@ fi
 if [ -z "$CALLED_BY_JENKINS" ]; then
   RPM_VERSION=$(curl http://install.infra.wisdom.com/usher/x86_64/ | grep "usher_networkmanager$SUFFIX\-" | tail -n 1 | sed "s/.*usher_networkmanager$SUFFIX-\(.*\)\.el6\.x86_64\.rpm.*/\1/")
 else
-  RPM_VERSION=$(curl http://install.infra.wisdom.com/usher/x86_64/ 2>/dev/null| grep "usher_networkmanager$SUFFIX\-" | tail -n 1 | sed "s/.*usher_networkmanager$SUFFIX-\(.*\)\.el6\.x86_64\.rpm.*/\1/")
+  RPM_VERSION=$(curl -s http://install.infra.wisdom.com/usher/x86_64/ | grep "usher_networkmanager$SUFFIX\-" | tail -n 1 | sed "s/.*usher_networkmanager$SUFFIX-\(.*\)\.el6\.x86_64\.rpm.*/\1/")
 fi
 
 $BUILD_SCRIPT $RPM_VERSION $FOR_WHITCH $TARGET_DIR
