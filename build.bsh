@@ -29,7 +29,7 @@ mkdir stage
 pushd stage
 
 # Download rpm
-if [ -z "$JENKINS_URL" ]; then
+if [ -z "$CALLED_BY_JENKINS" ]; then
   wget $RPM_URL
 else
   wget --quiet $RPM_URL
